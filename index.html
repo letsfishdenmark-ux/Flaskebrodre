@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"><!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>De Fynske Flaskebrødre</title>
+
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg">
+  <link rel="icon" href="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#e67319',
+              light: '#f58a38',
+              dark: '#b35108',
+            },
+            dark: {
+              bg: '#0a0a0a',
+              card: '#141414',
+              border: '#242424'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-black text-gray-200 antialiased flex justify-center">
+
+  <!-- ================= 0. PERSONLIG LOG-IND SKÆRM ================= -->
+  <div id="lock-screen" class="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center px-6">
+    <div class="w-40 h-40 mb-2 flex items-center justify-center">
+      <img 
+        src="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg" 
+        alt="De Fynske Flaskebrødre" 
+        class="w-full h-full object-contain drop-shadow-[0_4px_24px_rgba(230,115,25,0.4)]"
+      >
+    </div>
+
+    <h2 class="text-lg font-bold text-white mb-1">Medlemslogin</h2>
+    <p class="text-xs text-neutral-400 mb-5 text-center">Log ind som flaskebroder</p>
+
+    <div class="w-full max-w-xs space-y-3">
+      <div>
+        <label class="block text-[11px] text-neutral-400 uppercase tracking-wider mb-1">Brugernavn</label>
+        <input 
+          id="login-username" 
+          type="text" 
+          placeholder="Brugernavn (f.eks. coort el. skøtt)" 
+          class="w-full bg-neutral-900 border border-neutral-700 focus:border-brand text-sm text-white rounded-xl py-3 px-4 outline-none transition"
+        >
+      </div>
+
+      <div>
+        <label class="block text-[11px] text-neutral-400 uppercase tracking-wider mb-1">Kode</label>
+        <input 
+          id="login-password" 
+          type="password" 
+          inputmode="numeric"
+          placeholder="Kode" 
+          class="w-full bg-neutral-900 border border-neutral-700 focus:border-brand text-sm text-white rounded-xl py-3 px-4 outline-none transition"
+        >
+      </div>
+
+      <button 
+        onclick="attemptLogin()" 
+        class="w-full py-3 bg-brand hover:bg-brand-light text-black font-bold text-sm rounded-xl shadow-lg transition active:scale-95 mt-2"
+      >
+        Log ind 🍺
+      </button>
+
+      <p id="lock-error" class="text-xs text-red-500 text-center font-semibold hidden pt-1">
+        Forkert brugernavn eller kode!
+      </p>
+    </div>
+  </div>
+
+  <!-- ================= APP CONTAINER ================= -->
+  <div id="app-container" class="hidden w-full max-w-md min-h-screen bg-[#0a0a0a] flex flex-col justify-between border-x border-neutral-900 shadow-2xl relative pb-20">
+
+    <!-- Statusbar -->
+    <div class="px-6 pt-3 pb-1 flex justify-between items-center text-xs text-neutral-400">
+      <span id="current-time">19:30</span>
+      <div class="flex items-center space-x-2">
+        <span id="sync-status" class="text-[10px] font-bold text-emerald-400 flex items-center">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span> Live
+        </span>
+        <i class="fa-solid fa-signal"></i>
+        <i class="fa-solid fa-wifi"></i>
+        <i class="fa-solid fa-battery-full"></i>
+      </div>
+    </div>
+
+    <!-- Hovedindhold -->
+    <main class="flex-1 overflow-y-auto custom-scroll px-4">
+
+      <!-- ================= 1. FORSIDE ================= -->
+      <section id="tab-hjem" class="tab-content block">
+        <div class="text-center pt-1 pb-4 flex flex-col items-center">
+          <div class="w-52 h-52 flex items-center justify-center -mb-2">
+            <img 
+              src="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg" 
+              alt="De Fynske Flaskebrødre" 
+              class="w-full h-full object-contain drop-shadow-[0_4px_24px_rgba(230,115,25,0.4)]"
+            >
+          </div>
+          <p class="text-neutral-400 text-xs italic mt-1 mb-4">"En flaskebror i dag, en flaskebror for altid"</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <button onclick="switchTab('medlemmer')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-users text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Medlemmer</span>
+          </button>
+          
+          <button onclick="switchTab('bodekasse')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-beer-mug-empty text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Bødekasse</span>
+          </button>
+
+          <button onclick="switchTab('arrangementer')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-regular fa-calendar-days text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Arrangementer</span>
+          </button>
+
+          <button onclick="switchTab('regler')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-map-location-dot text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Rute & Regler</span>
+          </button>
+
+          <button onclick="switchTab('galleri')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-images text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Galleri</span>
+          </button>
+
+          <button onclick="switchTab('statistik')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-chart-simple text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Statistik</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= 2. MEDLEMMER ================= -->
+      <section id="tab-medlemmer" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-4 pt-1">
+          <h2 class="text-xl font-bold text-white">Medlemmer (9)</h2>
+        </div>
+        <div id="members-list-container" class="space-y-2.5 pb-4"></div>
+      </section>
+
+      <!-- ================= 3. BØDEKASSE ================= -->
+      <section id="tab-bodekasse" class="tab-content hidden">
+        <div class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-brand/40 rounded-2xl p-4 mb-3 shadow-lg">
+          <div class="grid grid-cols-2 gap-2 text-center border-b border-neutral-800/80 pb-3">
+            <div>
+              <p class="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">I kassen (betalt)</p>
+              <h2 id="total-kasse" class="text-2xl font-black text-emerald-400 mt-0.5">0 kr.</h2>
+            </div>
+            <div>
+              <p class="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">Udestående bøder</p>
+              <h2 id="total-skyldigt" class="text-2xl font-black text-brand mt-0.5">0 kr.</h2>
+            </div>
+          </div>
+          
+          <button onclick="openFineModal()" class="w-full mt-3 py-2.5 bg-brand hover:bg-brand-light text-black font-bold rounded-xl text-sm shadow transition active:scale-95">
+            + Udsted ny bøde
+          </button>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-950/40 to-indigo-950/40 border border-blue-500/40 rounded-2xl p-3 mb-4 flex items-center justify-between shadow-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-[#5a78ff] flex items-center justify-center font-black text-white text-xs shadow-md">
+              MP
+            </div>
+            <div>
+              <span class="text-[10px] text-blue-300 uppercase tracking-wider block font-semibold">MobilePay Boks</span>
+              <span class="text-base font-extrabold text-white tracking-widest">2287AN</span>
+            </div>
+          </div>
+          <button onclick="payMobilePay()" class="px-3.5 py-2 bg-[#5a78ff] hover:bg-[#4b66e6] text-white text-xs font-bold rounded-xl shadow transition active:scale-95 flex items-center space-x-1.5">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            <span>Betal boks</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 p-1 bg-neutral-900 rounded-xl mb-4 text-xs font-semibold">
+          <button onclick="setFilter('all', this)" class="fine-filter-btn py-1.5 rounded-lg bg-brand text-black">Alle</button>
+          <button onclick="setFilter('unpaid', this)" class="fine-filter-btn py-1.5 rounded-lg text-neutral-400">Ubetalt</button>
+          <button onclick="setFilter('paid', this)" class="fine-filter-btn py-1.5 rounded-lg text-neutral-400">Betalt</button>
+        </div>
+
+        <div id="fines-list" class="space-y-2 pb-4"></div>
+      </section>
+
+      <!-- ================= 4. ARRANGEMENTER ================= -->
+      <section id="tab-arrangementer" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-3 pt-1">
+          <div>
+            <h2 class="text-xl font-bold text-white">Arrangementer</h2>
+            <p class="text-xs text-neutral-400">Logens fælles begivenheder</p>
+          </div>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+
+        <button onclick="openEventModal()" class="w-full py-2.5 bg-brand hover:bg-brand-light text-black font-bold rounded-xl text-sm shadow transition active:scale-95 mb-4 flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Opret arrangement</span>
+        </button>
+
+        <div id="events-list" class="space-y-3 pb-4"></div>
+      </section>
+
+      <!-- ================= 5. RUTE & REGLER ================= -->
+      <section id="tab-regler" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-3 pt-1">
+          <div>
+            <h2 class="text-xl font-bold text-white">Ruten & Regler</h2>
+            <p class="text-xs text-neutral-400">Den faste tur rundt i Odense</p>
+          </div>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+
+        <div class="bg-dark-card border border-brand/30 rounded-2xl p-4 mb-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-neutral-800">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-map-pin text-brand text-sm"></i>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-white">Ruteoversigt</h3>
+            </div>
+            <span class="text-[10px] bg-brand/20 text-brand px-2 py-0.5 rounded-full font-bold">8 Stop</span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">1</span>
+              <span class="text-sm font-bold text-white">Remo Bar</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">2</span>
+              <span class="text-sm font-bold text-white">Vognhjulet</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">3</span>
+              <span class="text-sm font-bold text-white">Corner</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">4</span>
+              <span class="text-sm font-bold text-white">Ungarsk Vinstue</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">5</span>
+              <span class="text-sm font-bold text-white">Lørups Vinstue</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">6</span>
+              <span class="text-sm font-bold text-white">Slotskroen</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">7</span>
+              <span class="text-sm font-bold text-white">47</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">8</span>
+              <span class="text-sm font-bold text-white">Tingstedet</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-dark-card border border-dashed border-neutral-800 rounded-2xl p-4 text-center">
+          <i class="fa-solid fa-scroll text-2xl text-brand/70 mb-2"></i>
+          <h4 class="text-sm font-bold text-white">Regler for turen</h4>
+          <p class="text-xs text-neutral-400 mt-1">Formandskabet er ved at nedskrive de officielle regler for logen. De opdateres her snarest! 🍺</p>
+        </div>
+      </section>
+
+      <!-- ================= 6. GALLERI ================= -->
+      <section id="tab-galleri" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-4 pt-1">
+          <h2 class="text-xl font-bold text-white">Galleri</h2>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pb-4">
+          <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=400&q=80" class="rounded-xl h-36 w-full object-cover border border-neutral-800" alt="Øl">
+          <img src="https://images.unsplash.com/photo-1538488881522-4326c3ccab7d?auto=format&fit=crop&w=400&q=80" class="rounded-xl h-36 w-full object-cover border border-neutral-800" alt="Skål">
+        </div>
+      </section>
+
+      <!-- ================= 7. STATISTIK ================= -->
+      <section id="tab-statistik" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-4 pt-1">
+          <h2 class="text-xl font-bold text-white">Hall of Shame 🍺</h2>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+        <div class="bg-dark-card border border-neutral-800 rounded-xl p-4 mb-4">
+          <h3 class="text-xs uppercase font-bold text-brand tracking-wider mb-3">Flest bøder tildelt</h3>
+          <div id="hall-of-shame-list" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- ================= 8. PROFIL ================= -->
+      <section id="tab-profil" class="tab-content hidden">
+        <div class="text-center py-4">
+          <img id="user-profile-img" src="" alt="Profil" class="w-20 h-20 mx-auto rounded-full object-cover border-2 border-brand shadow-lg mb-2">
+          
+          <h2 id="user-profile-name" class="text-lg font-bold text-white">-</h2>
+          <p id="user-profile-role" class="text-xs text-brand uppercase tracking-wider font-semibold">-</p>
+          <p id="user-profile-handle" class="text-[11px] text-neutral-500 mt-0.5">-</p>
+        </div>
+
+        <div class="space-y-2 pb-4 text-sm">
+          <div class="bg-dark-card border border-neutral-800 p-3.5 rounded-xl flex justify-between items-center">
+            <span class="text-neutral-300">Min status:</span>
+            <span class="font-bold text-emerald-400 flex items-center"><i class="fa-solid fa-circle-check mr-1.5 text-xs"></i>Aktiv Flaskebroder</span>
+          </div>
+          <div class="bg-dark-card border border-neutral-800 p-3.5 rounded-xl flex justify-between items-center">
+            <span class="text-neutral-300">Mine ubetalte bøder:</span>
+            <span id="profile-unpaid-amount" class="font-black text-brand text-base">0 kr.</span>
+          </div>
+          <div class="bg-dark-card border border-neutral-800 p-3.5 rounded-xl flex justify-between items-center">
+            <span class="text-neutral-300">Mine betalte bøder:</span>
+            <span id="profile-paid-amount" class="font-bold text-neutral-400 text-sm">0 kr.</span>
+          </div>
+        </div>
+
+        <div class="pt-4 text-center">
+          <button onclick="logout()" class="text-xs text-neutral-400 hover:text-red-400 underline py-2 transition">
+            <i class="fa-solid fa-right-from-bracket mr-1"></i> Log ud af appen
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ================= BUND-NAVIGATION ================= -->
+    <nav class="fixed bottom-0 w-full max-w-md bg-[#0a0a0a]/95 backdrop-blur-md border-t border-neutral-800 px-6 py-2 flex justify-between items-center z-40">
+      <button onclick="switchTab('hjem')" class="nav-btn flex flex-col items-center text-brand" data-target="hjem">
+        <i class="fa-solid fa-house text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Hjem</span>
+      </button>
+
+      <button onclick="switchTab('medlemmer')" class="nav-btn flex flex-col items-center text-neutral-500 hover:text-neutral-300" data-target="medlemmer">
+        <i class="fa-solid fa-users text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Medlemmer</span>
+      </button>
+
+      <button onclick="switchTab('bodekasse')" class="nav-btn flex flex-col items-center text-neutral-500 hover:text-neutral-300" data-target="bodekasse">
+        <i class="fa-solid fa-beer-mug-empty text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Bødekasse</span>
+      </button>
+
+      <button onclick="switchTab('profil')" class="nav-btn flex flex-col items-center text-neutral-500 hover:text-neutral-300" data-target="profil">
+        <i class="fa-solid fa-user text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Profil</span>
+      </button>
+    </nav>
+
+    <!-- ================= POP-UP: UDSTED BØDE ================= -->
+    <div id="fine-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-neutral-900 border border-neutral-700 w-full max-w-xs rounded-2xl p-5 shadow-2xl">
+        <h3 class="text-base font-bold text-white mb-3">Udsted bøde 🍺</h3>
+        
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Medlem:</label>
+        <select id="new-fine-person" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-3 outline-none focus:border-brand">
+        </select>
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Forseelse:</label>
+        <input id="new-fine-reason" type="text" placeholder="F.eks. For sen / spildt øl" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-3 outline-none focus:border-brand">
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Beløb (kr.):</label>
+        <input id="new-fine-amount" type="number" value="25" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-4 outline-none focus:border-brand">
+
+        <div class="flex space-x-2">
+          <button onclick="closeFineModal()" class="w-1/2 py-2.5 rounded-xl bg-neutral-800 text-neutral-300 text-xs font-semibold hover:bg-neutral-700 transition">Annuller</button>
+          <button onclick="addNewFine()" class="w-1/2 py-2.5 rounded-xl bg-brand hover:bg-brand-light text-black text-xs font-bold transition active:scale-95">Tilføj bøde</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= POP-UP: OPRET ARRANGEMENT ================= -->
+    <div id="event-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-neutral-900 border border-neutral-700 w-full max-w-xs rounded-2xl p-5 shadow-2xl">
+        <h3 class="text-base font-bold text-white mb-3">Opret arrangement 📅</h3>
+        
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Titel på begivenhed:</label>
+        <input id="new-event-title" type="text" placeholder="F.eks. Bodegarunde / Logemøde" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-3 outline-none focus:border-brand">
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Dato & Klokkeslæt:</label>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <input id="new-event-date" type="date" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 text-xs outline-none focus:border-brand">
+          <input id="new-event-time" type="time" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 text-xs outline-none focus:border-brand">
+        </div>
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Mødested / Info:</label>
+        <input id="new-event-location" type="text" placeholder="F.eks. Remo Bar &bull; Kl. 18:00" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-4 outline-none focus:border-brand">
+
+        <div class="flex space-x-2">
+          <button onclick="closeEventModal()" class="w-1/2 py-2.5 rounded-xl bg-neutral-800 text-neutral-300 text-xs font-semibold hover:bg-neutral-700 transition">Annuller</button>
+          <button onclick="addNewEvent()" class="w-1/2 py-2.5 rounded-xl bg-brand hover:bg-brand-light text-black text-xs font-bold transition active:scale-95">Opret</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIK ================= -->
+  <script>
+    const SUPABASE_URL = "https://akkwiowreyyxiflatfdu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFra3dpb3dyZXl5eGlmbGF0ZmR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzODQwNjEsImV4cCI6MjEwODk2MDA2MX0.tk7h_PoC6nQBCH1gcHzzTG4nYRSHpvwJiJpKpd9nH98";
+
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
+        });
+      }
+    } catch(e) {
+      console.log("Supabase standby:", e);
+    }
+
+    // ================= BRUGER-DATABASE =================
+    const MEDLEMMER = [
+      { name: "Mads Coort Løvstrøm Larsen", role: "Formand", handle: "@Coort", loginKey: "coort", avatar: "https://i.postimg.cc/KRHNKwMP/IMG-4587.png" },
+      { name: "Mathias Skøtt", role: "Næstformand", handle: "@Skøtt", loginKey: "skøtt", avatar: "https://i.postimg.cc/w7GVtZm1/IMG-4584.png" },
+      { name: "Bertram Jørgensen", role: "Medlem", handle: "@Bertram", loginKey: "bertram", avatar: "https://i.postimg.cc/Tp49yFDW/IMG-4585.png" },
+      { name: "Mads Petersen", role: "Medlem", handle: "@Mads", loginKey: "mads", avatar: "https://i.postimg.cc/dLxB7pyr/IMG-4588.png" },
+      { name: "Mikkel Guldager", role: "Medlem", handle: "@Gulddreng", loginKey: "gulddreng", avatar: "https://i.postimg.cc/xc4RkhzL/IMG-4589.png" },
+      { name: "Robert Rasmussen", role: "Medlem", handle: "@Robert", loginKey: "robert", avatar: "https://i.postimg.cc/SJvrX3MD/IMG-4590.png" },
+      { name: "Jannek Kirkegaard Bachmann", role: "Medlem", handle: "@Jannek", loginKey: "jannek", avatar: "https://i.postimg.cc/JG2qyvkJ/IMG-4586.png" },
+      { name: "Sebastian Grarup Strand", role: "Medlem", handle: "@Sebastian", loginKey: "sebastian", avatar: "https://i.postimg.cc/pp6Z94FG/IMG-4591.png" },
+      { name: "Valdemar Reinhold Von Øhlenschlæger", role: "Medlem", handle: "@Valdemar", loginKey: "valdemar", avatar: "https://i.postimg.cc/Yhs34ZWD/IMG-4592.png" }
+    ];
+
+    const BRUGERE = {};
+    MEDLEMMER.forEach(m => {
+      BRUGERE[m.loginKey] = m;
+      if (m.loginKey === 'skøtt') BRUGERE['skott'] = m;
+      if (m.loginKey === 'gulddreng') BRUGERE['guldager'] = m;
+    });
+
+    const GYLDIGT_KODEORD = "2021";
+    let activeFilter = 'all';
+    let finesData = [];
+    let eventsData = [];
+
+    // ================= INIT: BYG MEDLEMSLISTER =================
+    function initMemberLists() {
+      const container = document.getElementById('members-list-container');
+      const select = document.getElementById('new-fine-person');
+      if (container) container.innerHTML = '';
+      if (select) select.innerHTML = '';
+
+      MEDLEMMER.forEach(m => {
+        if (container) {
+          const card = document.createElement('div');
+          card.className = "bg-dark-card border border-neutral-800 rounded-xl p-3 flex items-center space-x-3.5";
+          card.innerHTML = `
+            <img src="${m.avatar}" alt="${m.name}" class="w-12 h-12 rounded-full object-cover border-2 ${m.role === 'Formand' || m.role === 'Næstformand' ? 'border-brand/80' : 'border-neutral-700'} shrink-0 shadow">
+            <div>
+              <h3 class="font-bold text-sm text-white">${m.name}</h3>
+              <p class="text-[11px] text-neutral-400">${m.handle} &bull; ${m.role}</p>
+            </div>
+          `;
+          container.appendChild(card);
+        }
+
+        if (select) {
+          const opt = document.createElement('option');
+          opt.value = m.name;
+          opt.innerText = m.name;
+          select.appendChild(opt);
+        }
+      });
+    }
+
+    // ================= TID I STATUSBAR =================
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const el = document.getElementById('current-time');
+      if (el) el.innerText = `${h}:${m}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ================= LOGIN & PROFIL =================
+    function getLoggedInUser() {
+      const key = localStorage.getItem('flaskebroder_logged_user');
+      return key && BRUGERE[key] ? BRUGERE[key] : null;
+    }
+
+    function updateProfileView(user) {
+      if (!user) return;
+      document.getElementById('user-profile-img').src = user.avatar;
+      document.getElementById('user-profile-name').innerText = user.name;
+      document.getElementById('user-profile-role').innerText = user.role;
+      document.getElementById('user-profile-handle').innerText = user.handle;
+      recalculateProfileFines();
+    }
+
+    function recalculateProfileFines() {
+      const user = getLoggedInUser();
+      if (!user) return;
+
+      const myFines = finesData.filter(f => f.person === user.name);
+      const unpaidSum = myFines.filter(f => f.status === 'unpaid').reduce((acc, f) => acc + Number(f.amount), 0);
+      const paidSum = myFines.filter(f => f.status === 'paid').reduce((acc, f) => acc + Number(f.amount), 0);
+
+      const unEl = document.getElementById('profile-unpaid-amount');
+      const pEl = document.getElementById('profile-paid-amount');
+      if (unEl) unEl.innerText = `${unpaidSum} kr.`;
+      if (pEl) pEl.innerText = `${paidSum} kr.`;
+    }
+
+    function checkExistingLogin() {
+      const user = getLoggedInUser();
+      if (user) {
+        updateProfileView(user);
+        document.getElementById('lock-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+      }
+    }
+
+    function attemptLogin() {
+      const uInput = document.getElementById('login-username').value.trim().toLowerCase();
+      const pInput = document.getElementById('login-password').value.trim();
+
+      if (pInput === GYLDIGT_KODEORD && BRUGERE[uInput]) {
+        const user = BRUGERE[uInput];
+        localStorage.setItem('flaskebroder_logged_user', user.loginKey);
+        updateProfileView(user);
+        document.getElementById('lock-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('lock-error').classList.add('hidden');
+        loadFines();
+        loadEvents();
+      } else {
+        document.getElementById('lock-error').classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('flaskebroder_logged_user');
+      document.getElementById('lock-screen').classList.remove('hidden');
+      document.getElementById('app-container').classList.add('hidden');
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+    }
+
+    document.getElementById('login-password').addEventListener('keypress', e => {
+      if (e.key === 'Enter') attemptLogin();
+    });
+
+    // ================= MOBILEPAY 2287AN =================
+    function payMobilePay() {
+      navigator.clipboard.writeText("2287AN").catch(() => {});
+      alert("Boks-kode '2287AN' er kopieret!\n\nÅbner MobilePay...");
+      window.location.href = "mobilepay://";
+      setTimeout(() => {
+        window.open("https://box.mobilepay.dk/box/2287AN", "_blank");
+      }, 800);
+    }
+
+    // ================= BØDE DATA LOGIK (FULD SKY-SYNC) =================
+    async function loadFines() {
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('boder')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error("Supabase load bøder fejl:", error);
+          } else if (data) {
+            finesData = data;
+            localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+          }
+        } catch(e) {
+          console.error("Netværksfejl:", e);
+        }
+      } else {
+        const saved = localStorage.getItem('flaskebroder_fines');
+        if (saved) finesData = JSON.parse(saved);
+      }
+      renderFines();
+    }
+
+    async function addNewFine() {
+      const person = document.getElementById('new-fine-person').value;
+      const reason = document.getElementById('new-fine-reason').value.trim() || 'Diverse forseelse';
+      const amount = parseInt(document.getElementById('new-fine-amount').value) || 25;
+
+      const finePayload = {
+        person: person,
+        reason: reason,
+        amount: amount,
+        status: 'unpaid'
+      };
+
+      if (supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from('boder')
+          .insert([finePayload])
+          .select();
+
+        if (error) {
+          alert("Fejl fra skyen: " + error.message);
+          return;
+        }
+
+        if (data && data[0]) {
+          finesData.unshift(data[0]);
+        }
+      } else {
+        finesData.unshift({ id: 'fine_' + Date.now(), ...finePayload });
+      }
+
+      localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+      renderFines();
+      closeFineModal();
+      document.getElementById('new-fine-reason').value = '';
+    }
+
+    async function toggleFineStatus(fineId) {
+      const fine = finesData.find(f => f.id == fineId);
+      if (!fine) return;
+      const newStatus = fine.status === 'paid' ? 'unpaid' : 'paid';
+
+      if (supabaseClient) {
+        const { error } = await supabaseClient
+          .from('boder')
+          .update({ status: newStatus })
+          .eq('id', fineId);
+
+        if (error) {
+          alert("Fejl ved opdatering: " + error.message);
+          return;
+        }
+      }
+
+      fine.status = newStatus;
+      localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+      renderFines();
+    }
+
+    async function deleteFine(fineId) {
+      if (!confirm("Vil du slette denne bøde?")) return;
+
+      if (supabaseClient) {
+        const { error } = await supabaseClient
+          .from('boder')
+          .delete()
+          .eq('id', fineId);
+
+        if (error) {
+          alert("Fejl ved sletning: " + error.message);
+          return;
+        }
+      }
+
+      finesData = finesData.filter(f => f.id != fineId);
+      localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+      renderFines();
+    }
+
+    function renderFines() {
+      const list = document.getElementById('fines-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const paidTotal = finesData.filter(f => f.status === 'paid').reduce((sum, f) => sum + Number(f.amount), 0);
+      const unpaidTotal = finesData.filter(f => f.status === 'unpaid').reduce((sum, f) => sum + Number(f.amount), 0);
+
+      document.getElementById('total-kasse').innerText = `${paidTotal} kr.`;
+      document.getElementById('total-skyldigt').innerText = `${unpaidTotal} kr.`;
+
+      const filtered = finesData.filter(f => {
+        if (activeFilter === 'all') return true;
+        return f.status === activeFilter;
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-10 text-neutral-500 text-xs italic">
+            <i class="fa-solid fa-beer-mug-empty text-3xl text-neutral-700 block mb-2"></i>
+            Ingen bøder fundet.<br>Logen opfører sig pænt! 🍺
+          </div>
+        `;
+      } else {
+        filtered.forEach(fine => {
+          const isPaid = fine.status === 'paid';
+          const item = document.createElement('div');
+          item.className = 'bg-dark-card border border-neutral-800 p-3 rounded-xl flex items-center justify-between shadow-sm';
+          item.innerHTML = `
+            <div class="flex-1 pr-2">
+              <div class="flex items-center space-x-2">
+                <h4 class="text-sm font-bold text-white">${fine.person}</h4>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isPaid ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-brand/20 text-brand border border-brand/30'}">
+                  ${isPaid ? 'Betalt' : 'Ubetalt'}
+                </span>
+              </div>
+              <p class="text-xs text-neutral-400 mt-0.5">${fine.reason}</p>
+            </div>
+            <div class="text-right shrink-0 flex flex-col items-end space-y-1">
+              <span class="font-black text-sm ${isPaid ? 'text-neutral-400 line-through' : 'text-brand'}">${fine.amount} kr.</span>
+              <div class="flex items-center space-x-1.5">
+                <button onclick="toggleFineStatus('${fine.id}')" title="${isPaid ? 'Gør ubetalt' : 'Marker betalt'}" class="text-[11px] px-2 py-0.5 rounded-md font-semibold transition ${isPaid ? 'bg-neutral-800 text-neutral-400 hover:text-white' : 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'}">
+                  ${isPaid ? 'Fortryd' : 'Betalt ✓'}
+                </button>
+                <button onclick="deleteFine('${fine.id}')" title="Slet" class="text-neutral-600 hover:text-red-400 text-xs p-1">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      recalculateProfileFines();
+      renderHallOfShame();
+    }
+
+    function setFilter(status, btn) {
+      activeFilter = status;
+      document.querySelectorAll('.fine-filter-btn').forEach(b => {
+        b.classList.remove('bg-brand', 'text-black');
+        b.classList.add('text-neutral-400');
+      });
+      btn.classList.add('bg-brand', 'text-black');
+      btn.classList.remove('text-neutral-400');
+      renderFines();
+    }
+
+    // ================= STATISTIK / HALL OF SHAME =================
+    function renderHallOfShame() {
+      const container = document.getElementById('hall-of-shame-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const counts = {};
+      MEDLEMMER.forEach(m => {
+        counts[m.name] = { name: m.name, handle: m.handle, avatar: m.avatar, totalFines: 0, totalAmount: 0 };
+      });
+
+      finesData.forEach(f => {
+        if (counts[f.person]) {
+          counts[f.person].totalFines += 1;
+          counts[f.person].totalAmount += Number(f.amount);
+        }
+      });
+
+      const sorted = Object.values(counts).sort((a, b) => b.totalAmount - a.totalAmount || b.totalFines - a.totalFines);
+
+      if (sorted.every(m => m.totalFines === 0)) {
+        container.innerHTML = '<p class="text-xs text-neutral-500 italic">Ingen bøder registreret endnu.</p>';
+        return;
+      }
+
+      sorted.forEach((member, index) => {
+        if (member.totalFines === 0) return;
+
+        let rankBadge = `<span class="text-xs font-bold text-neutral-500 w-5 text-center">${index + 1}</span>`;
+        if (index === 0) rankBadge = `<span class="text-base">🥇</span>`;
+        if (index === 1) rankBadge = `<span class="text-base">🥈</span>`;
+        if (index === 2) rankBadge = `<span class="text-base">🥉</span>`;
+
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-2 rounded-lg bg-neutral-900/60 border border-neutral-800';
+        row.innerHTML = `
+          <div class="flex items-center space-x-2.5">
+            ${rankBadge}
+            <img src="${member.avatar}" class="w-8 h-8 rounded-full object-cover border border-neutral-700">
+            <div>
+              <p class="text-xs font-bold text-white">${member.name}</p>
+              <p class="text-[10px] text-neutral-400">${member.totalFines} ${member.totalFines === 1 ? 'bøde' : 'bøder'}</p>
+            </div>
+          </div>
+          <span class="text-xs font-black text-brand">${member.totalAmount} kr.</span>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // ================= ARRANGEMENTER LOGIK =================
+    async function loadEvents() {
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('arrangementer')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error("Supabase load events fejl:", error);
+          } else if (data) {
+            eventsData = data.map(e => ({
+              id: e.id,
+              title: e.title,
+              dateFormatted: e.date_formatted || '',
+              time: e.time || '',
+              location: e.location || '',
+              attending: Array.isArray(e.attending) ? e.attending : [],
+              declined: Array.isArray(e.declined) ? e.declined : []
+            }));
+            localStorage.setItem('flaskebroder_events', JSON.stringify(eventsData));
+          }
+        } catch(e) {
+          console.error("Netværksfejl:", e);
+        }
+      } else {
+        const saved = localStorage.getItem('flaskebroder_events');
+        if (saved) eventsData = JSON.parse(saved);
+      }
+      renderEvents();
+    }
+
+    function openEventModal() {
+      document.getElementById('event-modal').classList.remove('hidden');
+    }
+    function closeEventModal() {
+      document.getElementById('event-modal').classList.add('hidden');
+    }
+
+    async function addNewEvent() {
+      const title = document.getElementById('new-event-title').value.trim();
+      const date = document.getElementById('new-event-date').value;
+      const time = document.getElementById('new-event-time').value;
+      const location = document.getElementById('new-event-location').value.trim();
+
+      if (!title) {
+  <title>De Fynske Flaskebrødre</title>
+
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg">
+  <link rel="icon" href="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#e67319',
+              light: '#f58a38',
+              dark: '#b35108',
+            },
+            dark: {
+              bg: '#0a0a0a',
+              card: '#141414',
+              border: '#242424'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-black text-gray-200 antialiased flex justify-center">
+
+  <!-- ================= 0. PERSONLIG LOG-IND SKÆRM ================= -->
+  <div id="lock-screen" class="fixed inset-0 bg-[#0a0a0a] z-50 flex flex-col items-center justify-center px-6">
+    <div class="w-40 h-40 mb-2 flex items-center justify-center">
+      <img 
+        src="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg" 
+        alt="De Fynske Flaskebrødre" 
+        class="w-full h-full object-contain drop-shadow-[0_4px_24px_rgba(230,115,25,0.4)]"
+      >
+    </div>
+
+    <h2 class="text-lg font-bold text-white mb-1">Medlemslogin</h2>
+    <p class="text-xs text-neutral-400 mb-5 text-center">Log ind som flaskebroder</p>
+
+    <div class="w-full max-w-xs space-y-3">
+      <div>
+        <label class="block text-[11px] text-neutral-400 uppercase tracking-wider mb-1">Brugernavn</label>
+        <input 
+          id="login-username" 
+          type="text" 
+          placeholder="Brugernavn (f.eks. coort el. skøtt)" 
+          class="w-full bg-neutral-900 border border-neutral-700 focus:border-brand text-sm text-white rounded-xl py-3 px-4 outline-none transition"
+        >
+      </div>
+
+      <div>
+        <label class="block text-[11px] text-neutral-400 uppercase tracking-wider mb-1">Kode</label>
+        <input 
+          id="login-password" 
+          type="password" 
+          inputmode="numeric"
+          placeholder="Kode" 
+          class="w-full bg-neutral-900 border border-neutral-700 focus:border-brand text-sm text-white rounded-xl py-3 px-4 outline-none transition"
+        >
+      </div>
+
+      <button 
+        onclick="attemptLogin()" 
+        class="w-full py-3 bg-brand hover:bg-brand-light text-black font-bold text-sm rounded-xl shadow-lg transition active:scale-95 mt-2"
+      >
+        Log ind 🍺
+      </button>
+
+      <p id="lock-error" class="text-xs text-red-500 text-center font-semibold hidden pt-1">
+        Forkert brugernavn eller kode!
+      </p>
+    </div>
+  </div>
+
+  <!-- ================= APP CONTAINER ================= -->
+  <div id="app-container" class="hidden w-full max-w-md min-h-screen bg-[#0a0a0a] flex flex-col justify-between border-x border-neutral-900 shadow-2xl relative pb-20">
+
+    <!-- Statusbar -->
+    <div class="px-6 pt-3 pb-1 flex justify-between items-center text-xs text-neutral-400">
+      <span id="current-time">19:30</span>
+      <div class="flex items-center space-x-2">
+        <span id="sync-status" class="text-[10px] font-bold text-emerald-400 flex items-center">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span> Live
+        </span>
+        <i class="fa-solid fa-signal"></i>
+        <i class="fa-solid fa-wifi"></i>
+        <i class="fa-solid fa-battery-full"></i>
+      </div>
+    </div>
+
+    <!-- Hovedindhold -->
+    <main class="flex-1 overflow-y-auto custom-scroll px-4">
+
+      <!-- ================= 1. FORSIDE ================= -->
+      <section id="tab-hjem" class="tab-content block">
+        <div class="text-center pt-1 pb-4 flex flex-col items-center">
+          <div class="w-52 h-52 flex items-center justify-center -mb-2">
+            <img 
+              src="https://i.postimg.cc/W45nJLTY/4DC84D85-6882-4547-B23C-17BC5CE316E5.jpg" 
+              alt="De Fynske Flaskebrødre" 
+              class="w-full h-full object-contain drop-shadow-[0_4px_24px_rgba(230,115,25,0.4)]"
+            >
+          </div>
+          <p class="text-neutral-400 text-xs italic mt-1 mb-4">"En flaskebror i dag, en flaskebror for altid"</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <button onclick="switchTab('medlemmer')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-users text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Medlemmer</span>
+          </button>
+          
+          <button onclick="switchTab('bodekasse')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-beer-mug-empty text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Bødekasse</span>
+          </button>
+
+          <button onclick="switchTab('arrangementer')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-regular fa-calendar-days text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Arrangementer</span>
+          </button>
+
+          <button onclick="switchTab('regler')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-map-location-dot text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Rute & Regler</span>
+          </button>
+
+          <button onclick="switchTab('galleri')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-images text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Galleri</span>
+          </button>
+
+          <button onclick="switchTab('statistik')" class="bg-dark-card border border-neutral-800 hover:border-brand/50 p-4 rounded-xl flex flex-col items-center justify-center transition active:scale-95 shadow-lg">
+            <i class="fa-solid fa-chart-simple text-2xl text-brand mb-2"></i>
+            <span class="text-sm font-semibold">Statistik</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= 2. MEDLEMMER ================= -->
+      <section id="tab-medlemmer" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-4 pt-1">
+          <h2 class="text-xl font-bold text-white">Medlemmer (9)</h2>
+        </div>
+        <div id="members-list-container" class="space-y-2.5 pb-4"></div>
+      </section>
+
+      <!-- ================= 3. BØDEKASSE ================= -->
+      <section id="tab-bodekasse" class="tab-content hidden">
+        <div class="bg-gradient-to-br from-neutral-900 to-neutral-950 border border-brand/40 rounded-2xl p-4 mb-3 shadow-lg">
+          <div class="grid grid-cols-2 gap-2 text-center border-b border-neutral-800/80 pb-3">
+            <div>
+              <p class="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">I kassen (betalt)</p>
+              <h2 id="total-kasse" class="text-2xl font-black text-emerald-400 mt-0.5">0 kr.</h2>
+            </div>
+            <div>
+              <p class="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">Udestående bøder</p>
+              <h2 id="total-skyldigt" class="text-2xl font-black text-brand mt-0.5">0 kr.</h2>
+            </div>
+          </div>
+          
+          <button onclick="openFineModal()" class="w-full mt-3 py-2.5 bg-brand hover:bg-brand-light text-black font-bold rounded-xl text-sm shadow transition active:scale-95">
+            + Udsted ny bøde
+          </button>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-950/40 to-indigo-950/40 border border-blue-500/40 rounded-2xl p-3 mb-4 flex items-center justify-between shadow-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-[#5a78ff] flex items-center justify-center font-black text-white text-xs shadow-md">
+              MP
+            </div>
+            <div>
+              <span class="text-[10px] text-blue-300 uppercase tracking-wider block font-semibold">MobilePay Boks</span>
+              <span class="text-base font-extrabold text-white tracking-widest">2287AN</span>
+            </div>
+          </div>
+          <button onclick="payMobilePay()" class="px-3.5 py-2 bg-[#5a78ff] hover:bg-[#4b66e6] text-white text-xs font-bold rounded-xl shadow transition active:scale-95 flex items-center space-x-1.5">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            <span>Betal boks</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 p-1 bg-neutral-900 rounded-xl mb-4 text-xs font-semibold">
+          <button onclick="setFilter('all', this)" class="fine-filter-btn py-1.5 rounded-lg bg-brand text-black">Alle</button>
+          <button onclick="setFilter('unpaid', this)" class="fine-filter-btn py-1.5 rounded-lg text-neutral-400">Ubetalt</button>
+          <button onclick="setFilter('paid', this)" class="fine-filter-btn py-1.5 rounded-lg text-neutral-400">Betalt</button>
+        </div>
+
+        <div id="fines-list" class="space-y-2 pb-4"></div>
+      </section>
+
+      <!-- ================= 4. ARRANGEMENTER ================= -->
+      <section id="tab-arrangementer" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-3 pt-1">
+          <div>
+            <h2 class="text-xl font-bold text-white">Arrangementer</h2>
+            <p class="text-xs text-neutral-400">Logens fælles begivenheder</p>
+          </div>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+
+        <button onclick="openEventModal()" class="w-full py-2.5 bg-brand hover:bg-brand-light text-black font-bold rounded-xl text-sm shadow transition active:scale-95 mb-4 flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>Opret arrangement</span>
+        </button>
+
+        <div id="events-list" class="space-y-3 pb-4"></div>
+      </section>
+
+      <!-- ================= 5. RUTE & REGLER ================= -->
+      <section id="tab-regler" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-3 pt-1">
+          <div>
+            <h2 class="text-xl font-bold text-white">Ruten & Regler</h2>
+            <p class="text-xs text-neutral-400">Den faste tur rundt i Odense</p>
+          </div>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+
+        <div class="bg-dark-card border border-brand/30 rounded-2xl p-4 mb-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-neutral-800">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-map-pin text-brand text-sm"></i>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-white">Ruteoversigt</h3>
+            </div>
+            <span class="text-[10px] bg-brand/20 text-brand px-2 py-0.5 rounded-full font-bold">8 Stop</span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">1</span>
+              <span class="text-sm font-bold text-white">Remo Bar</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">2</span>
+              <span class="text-sm font-bold text-white">Vognhjulet</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">3</span>
+              <span class="text-sm font-bold text-white">Corner</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">4</span>
+              <span class="text-sm font-bold text-white">Ungarsk Vinstue</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">5</span>
+              <span class="text-sm font-bold text-white">Lørups Vinstue</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">6</span>
+              <span class="text-sm font-bold text-white">Slotskroen</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">7</span>
+              <span class="text-sm font-bold text-white">47</span>
+            </div>
+            <div class="flex items-center space-x-3 p-2 rounded-xl bg-neutral-900/80 border border-neutral-800">
+              <span class="w-6 h-6 rounded-full bg-brand text-black font-black text-xs flex items-center justify-center shrink-0">8</span>
+              <span class="text-sm font-bold text-white">Tingstedet</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-dark-card border border-dashed border-neutral-800 rounded-2xl p-4 text-center">
+          <i class="fa-solid fa-scroll text-2xl text-brand/70 mb-2"></i>
+          <h4 class="text-sm font-bold text-white">Regler for turen</h4>
+          <p class="text-xs text-neutral-400 mt-1">Formandskabet er ved at nedskrive de officielle regler for logen. De opdateres her snarest! 🍺</p>
+        </div>
+      </section>
+
+      <!-- ================= 6. GALLERI ================= -->
+      <section id="tab-galleri" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-4 pt-1">
+          <h2 class="text-xl font-bold text-white">Galleri</h2>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pb-4">
+          <img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=400&q=80" class="rounded-xl h-36 w-full object-cover border border-neutral-800" alt="Øl">
+          <img src="https://images.unsplash.com/photo-1538488881522-4326c3ccab7d?auto=format&fit=crop&w=400&q=80" class="rounded-xl h-36 w-full object-cover border border-neutral-800" alt="Skål">
+        </div>
+      </section>
+
+      <!-- ================= 7. STATISTIK ================= -->
+      <section id="tab-statistik" class="tab-content hidden">
+        <div class="flex items-center justify-between mb-4 pt-1">
+          <h2 class="text-xl font-bold text-white">Hall of Shame 🍺</h2>
+          <button onclick="switchTab('hjem')" class="text-xs text-neutral-400 hover:text-brand flex items-center space-x-1">
+            <i class="fa-solid fa-chevron-left text-[10px]"></i> <span>Hjem</span>
+          </button>
+        </div>
+        <div class="bg-dark-card border border-neutral-800 rounded-xl p-4 mb-4">
+          <h3 class="text-xs uppercase font-bold text-brand tracking-wider mb-3">Flest bøder tildelt</h3>
+          <div id="hall-of-shame-list" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- ================= 8. PROFIL ================= -->
+      <section id="tab-profil" class="tab-content hidden">
+        <div class="text-center py-4">
+          <img id="user-profile-img" src="" alt="Profil" class="w-20 h-20 mx-auto rounded-full object-cover border-2 border-brand shadow-lg mb-2">
+          
+          <h2 id="user-profile-name" class="text-lg font-bold text-white">-</h2>
+          <p id="user-profile-role" class="text-xs text-brand uppercase tracking-wider font-semibold">-</p>
+          <p id="user-profile-handle" class="text-[11px] text-neutral-500 mt-0.5">-</p>
+        </div>
+
+        <div class="space-y-2 pb-4 text-sm">
+          <div class="bg-dark-card border border-neutral-800 p-3.5 rounded-xl flex justify-between items-center">
+            <span class="text-neutral-300">Min status:</span>
+            <span class="font-bold text-emerald-400 flex items-center"><i class="fa-solid fa-circle-check mr-1.5 text-xs"></i>Aktiv Flaskebroder</span>
+          </div>
+          <div class="bg-dark-card border border-neutral-800 p-3.5 rounded-xl flex justify-between items-center">
+            <span class="text-neutral-300">Mine ubetalte bøder:</span>
+            <span id="profile-unpaid-amount" class="font-black text-brand text-base">0 kr.</span>
+          </div>
+          <div class="bg-dark-card border border-neutral-800 p-3.5 rounded-xl flex justify-between items-center">
+            <span class="text-neutral-300">Mine betalte bøder:</span>
+            <span id="profile-paid-amount" class="font-bold text-neutral-400 text-sm">0 kr.</span>
+          </div>
+        </div>
+
+        <div class="pt-4 text-center">
+          <button onclick="logout()" class="text-xs text-neutral-400 hover:text-red-400 underline py-2 transition">
+            <i class="fa-solid fa-right-from-bracket mr-1"></i> Log ud af appen
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ================= BUND-NAVIGATION ================= -->
+    <nav class="fixed bottom-0 w-full max-w-md bg-[#0a0a0a]/95 backdrop-blur-md border-t border-neutral-800 px-6 py-2 flex justify-between items-center z-40">
+      <button onclick="switchTab('hjem')" class="nav-btn flex flex-col items-center text-brand" data-target="hjem">
+        <i class="fa-solid fa-house text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Hjem</span>
+      </button>
+
+      <button onclick="switchTab('medlemmer')" class="nav-btn flex flex-col items-center text-neutral-500 hover:text-neutral-300" data-target="medlemmer">
+        <i class="fa-solid fa-users text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Medlemmer</span>
+      </button>
+
+      <button onclick="switchTab('bodekasse')" class="nav-btn flex flex-col items-center text-neutral-500 hover:text-neutral-300" data-target="bodekasse">
+        <i class="fa-solid fa-beer-mug-empty text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Bødekasse</span>
+      </button>
+
+      <button onclick="switchTab('profil')" class="nav-btn flex flex-col items-center text-neutral-500 hover:text-neutral-300" data-target="profil">
+        <i class="fa-solid fa-user text-base"></i>
+        <span class="text-[10px] mt-1 font-semibold">Profil</span>
+      </button>
+    </nav>
+
+    <!-- ================= POP-UP: UDSTED BØDE ================= -->
+    <div id="fine-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-neutral-900 border border-neutral-700 w-full max-w-xs rounded-2xl p-5 shadow-2xl">
+        <h3 class="text-base font-bold text-white mb-3">Udsted bøde 🍺</h3>
+        
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Medlem:</label>
+        <select id="new-fine-person" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-3 outline-none focus:border-brand">
+        </select>
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Forseelse:</label>
+        <input id="new-fine-reason" type="text" placeholder="F.eks. For sen / spildt øl" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-3 outline-none focus:border-brand">
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Beløb (kr.):</label>
+        <input id="new-fine-amount" type="number" value="25" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-4 outline-none focus:border-brand">
+
+        <div class="flex space-x-2">
+          <button onclick="closeFineModal()" class="w-1/2 py-2.5 rounded-xl bg-neutral-800 text-neutral-300 text-xs font-semibold hover:bg-neutral-700 transition">Annuller</button>
+          <button onclick="addNewFine()" class="w-1/2 py-2.5 rounded-xl bg-brand hover:bg-brand-light text-black text-xs font-bold transition active:scale-95">Tilføj bøde</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= POP-UP: OPRET ARRANGEMENT ================= -->
+    <div id="event-modal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-neutral-900 border border-neutral-700 w-full max-w-xs rounded-2xl p-5 shadow-2xl">
+        <h3 class="text-base font-bold text-white mb-3">Opret arrangement 📅</h3>
+        
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Titel på begivenhed:</label>
+        <input id="new-event-title" type="text" placeholder="F.eks. Bodegarunde / Logemøde" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-3 outline-none focus:border-brand">
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Dato & Klokkeslæt:</label>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <input id="new-event-date" type="date" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 text-xs outline-none focus:border-brand">
+          <input id="new-event-time" type="time" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2 text-xs outline-none focus:border-brand">
+        </div>
+
+        <label class="block text-xs text-neutral-400 mb-1 font-medium">Mødested / Info:</label>
+        <input id="new-event-location" type="text" placeholder="F.eks. Remo Bar &bull; Kl. 18:00" class="w-full bg-neutral-800 border border-neutral-700 text-white rounded-lg p-2.5 text-sm mb-4 outline-none focus:border-brand">
+
+        <div class="flex space-x-2">
+          <button onclick="closeEventModal()" class="w-1/2 py-2.5 rounded-xl bg-neutral-800 text-neutral-300 text-xs font-semibold hover:bg-neutral-700 transition">Annuller</button>
+          <button onclick="addNewEvent()" class="w-1/2 py-2.5 rounded-xl bg-brand hover:bg-brand-light text-black text-xs font-bold transition active:scale-95">Opret</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIK ================= -->
+  <script>
+    const SUPABASE_URL = "https://akkwiowreyyxiflatfdu.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFra3dpb3dyZXl5eGlmbGF0ZmR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzODQwNjEsImV4cCI6MjEwODk2MDA2MX0.tk7h_PoC6nQBCH1gcHzzTG4nYRSHpvwJiJpKpd9nH98";
+
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
+        });
+      }
+    } catch(e) {
+      console.log("Supabase standby:", e);
+    }
+
+    // ================= BRUGER-DATABASE =================
+    const MEDLEMMER = [
+      { name: "Mads Coort Løvstrøm Larsen", role: "Formand", handle: "@Coort", loginKey: "coort", avatar: "https://i.postimg.cc/KRHNKwMP/IMG-4587.png" },
+      { name: "Mathias Skøtt", role: "Næstformand", handle: "@Skøtt", loginKey: "skøtt", avatar: "https://i.postimg.cc/w7GVtZm1/IMG-4584.png" },
+      { name: "Bertram Jørgensen", role: "Medlem", handle: "@Bertram", loginKey: "bertram", avatar: "https://i.postimg.cc/Tp49yFDW/IMG-4585.png" },
+      { name: "Mads Petersen", role: "Medlem", handle: "@Mads", loginKey: "mads", avatar: "https://i.postimg.cc/dLxB7pyr/IMG-4588.png" },
+      { name: "Mikkel Guldager", role: "Medlem", handle: "@Gulddreng", loginKey: "gulddreng", avatar: "https://i.postimg.cc/xc4RkhzL/IMG-4589.png" },
+      { name: "Robert Rasmussen", role: "Medlem", handle: "@Robert", loginKey: "robert", avatar: "https://i.postimg.cc/SJvrX3MD/IMG-4590.png" },
+      { name: "Jannek Kirkegaard Bachmann", role: "Medlem", handle: "@Jannek", loginKey: "jannek", avatar: "https://i.postimg.cc/JG2qyvkJ/IMG-4586.png" },
+      { name: "Sebastian Grarup Strand", role: "Medlem", handle: "@Sebastian", loginKey: "sebastian", avatar: "https://i.postimg.cc/pp6Z94FG/IMG-4591.png" },
+      { name: "Valdemar Reinhold Von Øhlenschlæger", role: "Medlem", handle: "@Valdemar", loginKey: "valdemar", avatar: "https://i.postimg.cc/Yhs34ZWD/IMG-4592.png" }
+    ];
+
+    const BRUGERE = {};
+    MEDLEMMER.forEach(m => {
+      BRUGERE[m.loginKey] = m;
+      if (m.loginKey === 'skøtt') BRUGERE['skott'] = m;
+      if (m.loginKey === 'gulddreng') BRUGERE['guldager'] = m;
+    });
+
+    const GYLDIGT_KODEORD = "2021";
+    let activeFilter = 'all';
+    let finesData = [];
+    let eventsData = [];
+
+    // ================= INIT: BYG MEDLEMSLISTER =================
+    function initMemberLists() {
+      const container = document.getElementById('members-list-container');
+      const select = document.getElementById('new-fine-person');
+      if (container) container.innerHTML = '';
+      if (select) select.innerHTML = '';
+
+      MEDLEMMER.forEach(m => {
+        if (container) {
+          const card = document.createElement('div');
+          card.className = "bg-dark-card border border-neutral-800 rounded-xl p-3 flex items-center space-x-3.5";
+          card.innerHTML = `
+            <img src="${m.avatar}" alt="${m.name}" class="w-12 h-12 rounded-full object-cover border-2 ${m.role === 'Formand' || m.role === 'Næstformand' ? 'border-brand/80' : 'border-neutral-700'} shrink-0 shadow">
+            <div>
+              <h3 class="font-bold text-sm text-white">${m.name}</h3>
+              <p class="text-[11px] text-neutral-400">${m.handle} &bull; ${m.role}</p>
+            </div>
+          `;
+          container.appendChild(card);
+        }
+
+        if (select) {
+          const opt = document.createElement('option');
+          opt.value = m.name;
+          opt.innerText = m.name;
+          select.appendChild(opt);
+        }
+      });
+    }
+
+    // ================= TID I STATUSBAR =================
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const el = document.getElementById('current-time');
+      if (el) el.innerText = `${h}:${m}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ================= LOGIN & PROFIL =================
+    function getLoggedInUser() {
+      const key = localStorage.getItem('flaskebroder_logged_user');
+      return key && BRUGERE[key] ? BRUGERE[key] : null;
+    }
+
+    function updateProfileView(user) {
+      if (!user) return;
+      document.getElementById('user-profile-img').src = user.avatar;
+      document.getElementById('user-profile-name').innerText = user.name;
+      document.getElementById('user-profile-role').innerText = user.role;
+      document.getElementById('user-profile-handle').innerText = user.handle;
+      recalculateProfileFines();
+    }
+
+    function recalculateProfileFines() {
+      const user = getLoggedInUser();
+      if (!user) return;
+
+      const myFines = finesData.filter(f => f.person === user.name);
+      const unpaidSum = myFines.filter(f => f.status === 'unpaid').reduce((acc, f) => acc + Number(f.amount), 0);
+      const paidSum = myFines.filter(f => f.status === 'paid').reduce((acc, f) => acc + Number(f.amount), 0);
+
+      const unEl = document.getElementById('profile-unpaid-amount');
+      const pEl = document.getElementById('profile-paid-amount');
+      if (unEl) unEl.innerText = `${unpaidSum} kr.`;
+      if (pEl) pEl.innerText = `${paidSum} kr.`;
+    }
+
+    function checkExistingLogin() {
+      const user = getLoggedInUser();
+      if (user) {
+        updateProfileView(user);
+        document.getElementById('lock-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+      }
+    }
+
+    function attemptLogin() {
+      const uInput = document.getElementById('login-username').value.trim().toLowerCase();
+      const pInput = document.getElementById('login-password').value.trim();
+
+      if (pInput === GYLDIGT_KODEORD && BRUGERE[uInput]) {
+        const user = BRUGERE[uInput];
+        localStorage.setItem('flaskebroder_logged_user', user.loginKey);
+        updateProfileView(user);
+        document.getElementById('lock-screen').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        document.getElementById('lock-error').classList.add('hidden');
+        loadFines();
+        loadEvents();
+      } else {
+        document.getElementById('lock-error').classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('flaskebroder_logged_user');
+      document.getElementById('lock-screen').classList.remove('hidden');
+      document.getElementById('app-container').classList.add('hidden');
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+    }
+
+    document.getElementById('login-password').addEventListener('keypress', e => {
+      if (e.key === 'Enter') attemptLogin();
+    });
+
+    // ================= MOBILEPAY 2287AN =================
+    function payMobilePay() {
+      navigator.clipboard.writeText("2287AN").catch(() => {});
+      alert("Boks-kode '2287AN' er kopieret!\n\nÅbner MobilePay...");
+      window.location.href = "mobilepay://";
+      setTimeout(() => {
+        window.open("https://box.mobilepay.dk/box/2287AN", "_blank");
+      }, 800);
+    }
+
+    // ================= BØDE DATA LOGIK (FULD SKY-SYNC) =================
+    async function loadFines() {
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('boder')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error("Supabase load bøder fejl:", error);
+          } else if (data) {
+            finesData = data;
+            localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+          }
+        } catch(e) {
+          console.error("Netværksfejl:", e);
+        }
+      } else {
+        const saved = localStorage.getItem('flaskebroder_fines');
+        if (saved) finesData = JSON.parse(saved);
+      }
+      renderFines();
+    }
+
+    async function addNewFine() {
+      const person = document.getElementById('new-fine-person').value;
+      const reason = document.getElementById('new-fine-reason').value.trim() || 'Diverse forseelse';
+      const amount = parseInt(document.getElementById('new-fine-amount').value) || 25;
+
+      const finePayload = {
+        person: person,
+        reason: reason,
+        amount: amount,
+        status: 'unpaid'
+      };
+
+      if (supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from('boder')
+          .insert([finePayload])
+          .select();
+
+        if (error) {
+          alert("Fejl fra skyen: " + error.message);
+          return;
+        }
+
+        if (data && data[0]) {
+          finesData.unshift(data[0]);
+        }
+      } else {
+        finesData.unshift({ id: 'fine_' + Date.now(), ...finePayload });
+      }
+
+      localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+      renderFines();
+      closeFineModal();
+      document.getElementById('new-fine-reason').value = '';
+    }
+
+    async function toggleFineStatus(fineId) {
+      const fine = finesData.find(f => f.id == fineId);
+      if (!fine) return;
+      const newStatus = fine.status === 'paid' ? 'unpaid' : 'paid';
+
+      if (supabaseClient) {
+        const { error } = await supabaseClient
+          .from('boder')
+          .update({ status: newStatus })
+          .eq('id', fineId);
+
+        if (error) {
+          alert("Fejl ved opdatering: " + error.message);
+          return;
+        }
+      }
+
+      fine.status = newStatus;
+      localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+      renderFines();
+    }
+
+    async function deleteFine(fineId) {
+      if (!confirm("Vil du slette denne bøde?")) return;
+
+      if (supabaseClient) {
+        const { error } = await supabaseClient
+          .from('boder')
+          .delete()
+          .eq('id', fineId);
+
+        if (error) {
+          alert("Fejl ved sletning: " + error.message);
+          return;
+        }
+      }
+
+      finesData = finesData.filter(f => f.id != fineId);
+      localStorage.setItem('flaskebroder_fines', JSON.stringify(finesData));
+      renderFines();
+    }
+
+    function renderFines() {
+      const list = document.getElementById('fines-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      const paidTotal = finesData.filter(f => f.status === 'paid').reduce((sum, f) => sum + Number(f.amount), 0);
+      const unpaidTotal = finesData.filter(f => f.status === 'unpaid').reduce((sum, f) => sum + Number(f.amount), 0);
+
+      document.getElementById('total-kasse').innerText = `${paidTotal} kr.`;
+      document.getElementById('total-skyldigt').innerText = `${unpaidTotal} kr.`;
+
+      const filtered = finesData.filter(f => {
+        if (activeFilter === 'all') return true;
+        return f.status === activeFilter;
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-10 text-neutral-500 text-xs italic">
+            <i class="fa-solid fa-beer-mug-empty text-3xl text-neutral-700 block mb-2"></i>
+            Ingen bøder fundet.<br>Logen opfører sig pænt! 🍺
+          </div>
+        `;
+      } else {
+        filtered.forEach(fine => {
+          const isPaid = fine.status === 'paid';
+          const item = document.createElement('div');
+          item.className = 'bg-dark-card border border-neutral-800 p-3 rounded-xl flex items-center justify-between shadow-sm';
+          item.innerHTML = `
+            <div class="flex-1 pr-2">
+              <div class="flex items-center space-x-2">
+                <h4 class="text-sm font-bold text-white">${fine.person}</h4>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isPaid ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-brand/20 text-brand border border-brand/30'}">
+                  ${isPaid ? 'Betalt' : 'Ubetalt'}
+                </span>
+              </div>
+              <p class="text-xs text-neutral-400 mt-0.5">${fine.reason}</p>
+            </div>
+            <div class="text-right shrink-0 flex flex-col items-end space-y-1">
+              <span class="font-black text-sm ${isPaid ? 'text-neutral-400 line-through' : 'text-brand'}">${fine.amount} kr.</span>
+              <div class="flex items-center space-x-1.5">
+                <button onclick="toggleFineStatus('${fine.id}')" title="${isPaid ? 'Gør ubetalt' : 'Marker betalt'}" class="text-[11px] px-2 py-0.5 rounded-md font-semibold transition ${isPaid ? 'bg-neutral-800 text-neutral-400 hover:text-white' : 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'}">
+                  ${isPaid ? 'Fortryd' : 'Betalt ✓'}
+                </button>
+                <button onclick="deleteFine('${fine.id}')" title="Slet" class="text-neutral-600 hover:text-red-400 text-xs p-1">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      recalculateProfileFines();
+      renderHallOfShame();
+    }
+
+    function setFilter(status, btn) {
+      activeFilter = status;
+      document.querySelectorAll('.fine-filter-btn').forEach(b => {
+        b.classList.remove('bg-brand', 'text-black');
+        b.classList.add('text-neutral-400');
+      });
+      btn.classList.add('bg-brand', 'text-black');
+      btn.classList.remove('text-neutral-400');
+      renderFines();
+    }
+
+    // ================= STATISTIK / HALL OF SHAME =================
+    function renderHallOfShame() {
+      const container = document.getElementById('hall-of-shame-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const counts = {};
+      MEDLEMMER.forEach(m => {
+        counts[m.name] = { name: m.name, handle: m.handle, avatar: m.avatar, totalFines: 0, totalAmount: 0 };
+      });
+
+      finesData.forEach(f => {
+        if (counts[f.person]) {
+          counts[f.person].totalFines += 1;
+          counts[f.person].totalAmount += Number(f.amount);
+        }
+      });
+
+      const sorted = Object.values(counts).sort((a, b) => b.totalAmount - a.totalAmount || b.totalFines - a.totalFines);
+
+      if (sorted.every(m => m.totalFines === 0)) {
+        container.innerHTML = '<p class="text-xs text-neutral-500 italic">Ingen bøder registreret endnu.</p>';
+        return;
+      }
+
+      sorted.forEach((member, index) => {
+        if (member.totalFines === 0) return;
+
+        let rankBadge = `<span class="text-xs font-bold text-neutral-500 w-5 text-center">${index + 1}</span>`;
+        if (index === 0) rankBadge = `<span class="text-base">🥇</span>`;
+        if (index === 1) rankBadge = `<span class="text-base">🥈</span>`;
+        if (index === 2) rankBadge = `<span class="text-base">🥉</span>`;
+
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-2 rounded-lg bg-neutral-900/60 border border-neutral-800';
+        row.innerHTML = `
+          <div class="flex items-center space-x-2.5">
+            ${rankBadge}
+            <img src="${member.avatar}" class="w-8 h-8 rounded-full object-cover border border-neutral-700">
+            <div>
+              <p class="text-xs font-bold text-white">${member.name}</p>
+              <p class="text-[10px] text-neutral-400">${member.totalFines} ${member.totalFines === 1 ? 'bøde' : 'bøder'}</p>
+            </div>
+          </div>
+          <span class="text-xs font-black text-brand">${member.totalAmount} kr.</span>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // ================= ARRANGEMENTER LOGIK =================
+    async function loadEvents() {
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('arrangementer')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error("Supabase load events fejl:", error);
+          } else if (data) {
+            eventsData = data.map(e => ({
+              id: e.id,
+              title: e.title,
+              dateFormatted: e.date_formatted || '',
+              time: e.time || '',
+              location: e.location || '',
+              attending: Array.isArray(e.attending) ? e.attending : [],
+              declined: Array.isArray(e.declined) ? e.declined : []
+            }));
+            localStorage.setItem('flaskebroder_events', JSON.stringify(eventsData));
+          }
+        } catch(e) {
+          console.error("Netværksfejl:", e);
+        }
+      } else {
+        const saved = localStorage.getItem('flaskebroder_events');
+        if (saved) eventsData = JSON.parse(saved);
+      }
+      renderEvents();
+    }
+
+    function openEventModal() {
+      document.getElementById('event-modal').classList.remove('hidden');
+    }
+    function closeEventModal() {
+      document.getElementById('event-modal').classList.add('hidden');
+    }
+
+    async function addNewEvent() {
+      const title = document.getElementById('new-event-title').value.trim();
+      const date = document.getElementById('new-event-date').value;
+      const time = document.getElementById('new-event-time').value;
+      const location = document.getElementById('new-event-location').value.trim();
+
+      if (!title) {
